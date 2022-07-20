@@ -10,13 +10,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  late String _search;
+  String _search = "";
   int _offset = 0;
 
   Future<Map> _getGif() async {
     http.Response respose;
 
-    if (_search == null) {
+    if (_search.isEmpty) {
       respose = await http.get(Uri.parse(
           "https://api.giphy.com/v1/gifs/trending?api_key=eqljFoQ4B5ZHmZARyt6IrIKaiR5jZmB2&limit=25&rating=g"));
     } else {
@@ -29,10 +29,28 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    print("hello");
-    _getGif().then((map) {
-      print(map);
+    _getGif().then((value) {
+      print(value);
     });
+  }
+
+  Widget _createGifTable(BuildContext context, AsyncSnapshot snapshot) {
+    return GridView.builder(
+        padding: EdgeInsets.all(10),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+        ),
+        itemCount: 25,
+        itemBuilder: (context, index) {
+          return GestureDetector(
+            child: Image.network(snapshot.data["data"][index]["images"]["fixed_height"]["url"],
+              height: 300,
+              fit: BoxFit.cover,
+            ),
+          );
+        });
   }
 
   @override
@@ -56,7 +74,32 @@ class _HomePageState extends State<HomePage> {
                   border: OutlineInputBorder()),
               style: TextStyle(color: Colors.white, fontSize: 18),
             ),
-          )
+          ),
+          Expanded(
+              child: FutureBuilder(
+            future: _getGif(),
+            builder: (context, snapshot) {
+              switch (snapshot.connectionState) {
+                case ConnectionState.waiting:
+                case ConnectionState.none:
+                  return Container(
+                    height: 200,
+                    width: 200,
+                    alignment: Alignment.center,
+                    child: const CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        strokeWidth: 5),
+                  );
+                default:
+                  if (snapshot.hasError) {
+                    print(snapshot.error);
+                    return Container();
+                  } else {
+                    return _createGifTable(context, snapshot);
+                  }
+              }
+            },
+          ))
         ],
       ),
     );
