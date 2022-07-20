@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'ui/home_page.dart';
+import 'package:flutter_gifapp/ui/home_page.dart';
+
 
 void main() {
-  runApp(const MaterialApp(
-    home: HomePage()
+  runApp(MaterialApp(
+    home: HomePage(),
+    theme: ThemeData(hintColor: Colors.white),
   ));
 }
 
