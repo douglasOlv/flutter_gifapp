@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_gifapp/ui/gif_page.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:http/http.dart' as http;
 
 class HomePage extends StatefulWidget {
@@ -51,6 +54,15 @@ class _HomePageState extends State<HomePage> {
               ),
               onTap: (){
                 Navigator.push(context, MaterialPageRoute(builder: (context)=> GifPage(snapshot.data["data"][index])));
+              },
+              onLongPress: () async {
+                final url = Uri.parse(snapshot.data["data"][index]["images"]["fixed_height"]["url"]);
+                final response = await http.get(url);
+                final temp = await getTemporaryDirectory();
+                final path = "${temp.path}/${snapshot.data["data"][index]["slug"]}.${snapshot.data["data"][index]["type"]}";
+                await File(path).writeAsBytes(response.bodyBytes);
+
+               await Share.shareFiles([path]);
               },
             );
           }
